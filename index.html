@@ -174,37 +174,9 @@
       
         <h6 id="1、控制台开放3306端口"><a href="#1、控制台开放3306端口" class="headerlink" title="1、控制台开放3306端口"></a>1、控制台开放3306端口</h6><p>我这里是腾讯云服务器，所以在腾讯云服务器里的安全组里添加一条规则，0.0.0.0/0是开放所有的端口</p>
 <h6 id="2、shell远程登陆服务器"><a href="#2、shell远程登陆服务器" class="headerlink" title="2、shell远程登陆服务器"></a>2、shell远程登陆服务器</h6><p>当我们使用远程工具链接mysql的时候，如果看到的报错是10060的话，就是防火墙没有开放3306端口，使用如下命令查看一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -an | grep 3306</span><br></pre></td></tr></table></figure></p>
-<p>红色表示没有开放端口，需要进入防火墙配置文件进行配置：<br>进入防火墙配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi  /etc/sysconfig/iptables</span><br></pre></td></tr></table></figure></p>
-<p>增加下面一行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-A INPUT -m state --state NEW -m tcp -p tcp --dport 3306 -j ACCEPT</span><br></pre></td></tr></table></figure></p>
-<p>   注意： <code>增加的开放3306端口的语句一定要在icmp-host-prohibited之前</code><br>重启防火墙  </p>
-<pre><code>service  iptables restart 
-// 或
-systemctl restart iptables
-</code></pre><p>配置完后如下：</p>
-<pre><code># Firewall configuration written by system-config-firewall
-# Manual customization of this file is not recommended.
-*filter
-:INPUT ACCEPT [0:0]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
--A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
--A INPUT -p icmp -j ACCEPT
--A INPUT -i lo -j ACCEPT
--A INPUT -i eth0 -j ACCEPT
--A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
--A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
--A INPUT -m state --state NEW -m tcp -p tcp --dport 3306 -j ACCEPT
--A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
--A FORWARD -p icmp -j ACCEPT
--A FORWARD -i lo -j ACCEPT
--A FORWARD -i eth0 -j ACCEPT
--A INPUT -j REJECT --reject-with icmp-host-prohibited
--A FORWARD -j REJECT --reject-with icmp-host-prohibited
-COMMIT
-</code></pre><h6 id="3、mysql开放远程访问权限"><a href="#3、mysql开放远程访问权限" class="headerlink" title="3、mysql开放远程访问权限"></a>3、mysql开放远程访问权限</h6><p>配置完防火墙之后，在远程访问mysql时，如果报错是1045，那么就是没有开放Mysql远程访问权限，此时需要开放Mysql访问权限，先登陆Mysql<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p</span><br></pre></td></tr></table></figure></p>
-<p>修改mysql库的user表，将host项，从localhost改为%。%这里表示的是允许任意host访问，如果只允许某一个ip访问，则可改为相应的ip，比如可以将localhost改为192.168.1.123，这表示只允许局域网的192.168.1.123这个ip远程访问mysql。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; use mysql; </span><br><span class="line">mysql&gt; update user set host = &apos;%&apos; where user = &apos;root&apos;; </span><br><span class="line">mysql&gt; select host, user from user; </span><br><span class="line">mysql&gt; flush privileges;</span><br></pre></td></tr></table></figure></p>
-<p>此时就Ok了，可以远程链接登陆MySql了。</p>
-
+        
+          <a class="article-more-a" href="/2019/03/02/my-first-blog/#more">more >></a>
+        
       
 
       
@@ -423,18 +395,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
             <input type="checkbox" q-on="click:toggleTag(e)" q-attr="checked:showTags">
           </label>
           <ul class="article-tag-list" q-show="showTags">
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">vue</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">php</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">iview</a>
-              </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">linux</a>
