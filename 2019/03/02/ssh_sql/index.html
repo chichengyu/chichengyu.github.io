@@ -24,11 +24,11 @@
 <link rel="shortcut icon" href="/images/favicon.png">
 
 
-<title>archives- 2019 - Hexo</title>
+<title>linux下开启mysql远程访问 - Hexo</title>
 
 <meta name="keywords" content>
 
-<meta name="description " content>
+<meta name="description " content="附加一段文章摘要，字数最好在140字以内，会出现在meta的description里面">
 
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
@@ -112,8 +112,10 @@
 
             <div class="page-title">
     <ul>
-        <li><a href="/" data-name="Home" title="Back Home">Home</a></li>
-        <li><a href="/tags" data-name="Tag Cloud" title="Tag Cloud">Tags</a></li>
+        <li><a href="/">Recent Posts</a></li>
+        
+        
+        
         <li class="page-search">
     <form id="search" class="search-form">
         <input type="text" readonly="readonly" id="local-search-input-tip" placeholder="click to search...">
@@ -126,47 +128,88 @@
 <div class="main-inner">
     <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
         <div class="post-header">
-            <h3 class="post-title">Nice 🥳 2 posts in total. Keep on posting.</h3>
-        </div>
-        
-
-        <div class="post-content markdown-body" itemprop="articleBody">
-            <div class="archives">
-                
-                
-                
-                
-                
-                <div class="archives-item">
-                    <h2>2019年03月</h2>
-                    <ul class="archives_list">
-                        
-                        <li>02日17:23:59
-                            <a href="/2019/03/02/ssh_sql/">linux下开启mysql远程访问</a>
-                            
-                        </li>
-                        
-                
-                
-                
-                        <li>02日16:38:55
-                            <a href="/2019/03/02/read/">小二博客</a>
-                            
-                        </li>
-                        
-                    </ul>
-                </div>
-                
-                
+            <div class="post-author clearfix">
+                <a class="avatar fleft" href="https://shuoit.net" target="_blank">
+                    <img width="48" src="/images/favicon.png" alt="avatar">
+                </a>
+                <p><span class="label">Author</span>
+                    <a href="https://shuoit.net" target="_blank">纠结伦</a>
+                    <span title="Last edited at&nbsp;2019-03-02">2019-03-02</span>
+                </p>
+                <p>一个搬🧱的劳斯基😁️️</p>
+            </div>
+            <h2 class="post-title">linux下开启mysql远程访问</h2>
+            <div class="post-meta">
+                emm... 1651 words in the article |
+                you are the&nbsp;<span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span>th friend who reading now
             </div>
         </div>
+        <div class="post-content markdown-body">
+            <h6 id="1、控制台开放3306端口"><a href="#1、控制台开放3306端口" class="headerlink" title="1、控制台开放3306端口"></a>1、控制台开放3306端口</h6><p>我这里是腾讯云服务器，所以在腾讯云服务器里的安全组里添加一条规则，0.0.0.0/0是开放所有的端口</p>
+<h6 id="2、shell远程登陆服务器"><a href="#2、shell远程登陆服务器" class="headerlink" title="2、shell远程登陆服务器"></a>2、shell远程登陆服务器</h6><p>当我们使用远程工具链接mysql的时候，如果看到的报错是10060的话，就是防火墙没有开放3306端口，使用如下命令查看一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -an | grep 3306</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
+<p>红色表示没有开放端口，需要进入防火墙配置文件进行配置：<br>进入防火墙配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi  /etc/sysconfig/iptables</span><br></pre></td></tr></table></figure></p>
+<p>增加下面一行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-A INPUT -m state --state NEW -m tcp -p tcp --dport 3306 -j ACCEPT</span><br></pre></td></tr></table></figure></p>
+<p>   注意： <code>增加的开放3306端口的语句一定要在icmp-host-prohibited之前</code><br>重启防火墙  </p>
+<pre><code>service  iptables restart 
+// 或
+systemctl restart iptables
+</code></pre><p>配置完后如下：</p>
+<pre><code># Firewall configuration written by system-config-firewall
+# Manual customization of this file is not recommended.
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -i eth0 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 3306 -j ACCEPT
+-A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A FORWARD -p icmp -j ACCEPT
+-A FORWARD -i lo -j ACCEPT
+-A FORWARD -i eth0 -j ACCEPT
+-A INPUT -j REJECT --reject-with icmp-host-prohibited
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+</code></pre><h6 id="3、mysql开放远程访问权限"><a href="#3、mysql开放远程访问权限" class="headerlink" title="3、mysql开放远程访问权限"></a>3、mysql开放远程访问权限</h6><p>配置完防火墙之后，在远程访问mysql时，如果报错是1045，那么就是没有开放Mysql远程访问权限，此时需要开放Mysql访问权限，先登陆Mysql<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p</span><br></pre></td></tr></table></figure></p>
+<p>修改mysql库的user表，将host项，从localhost改为%。%这里表示的是允许任意host访问，如果只允许某一个ip访问，则可改为相应的ip，比如可以将localhost改为192.168.1.123，这表示只允许局域网的192.168.1.123这个ip远程访问mysql。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; use mysql; </span><br><span class="line">mysql&gt; update user set host = &apos;%&apos; where user = &apos;root&apos;; </span><br><span class="line">mysql&gt; select host, user from user; </span><br><span class="line">mysql&gt; flush privileges;</span><br></pre></td></tr></table></figure></p>
+<p>此时就Ok了，可以远程链接登陆MySql了。</p>
+
+        </div>
+        <div class="post-tool">
+            <a class="btn-thumbs-up" href="javascript:void(0);" data-cid="52" title="95">
+                <i class="fa fa-thumbs-up" aria-hidden="true"></i> Donate
+            </a>
+        </div>
+        
+        <div class="post-tags">Tags：
+            
+            <a href="/tags/linux/">linux</a>
+            
+            <a href="/tags/mysql/">mysql</a>
+            
+        </div>
+        
     </article>
+    
+    <p style="text-align: center">This article just represents my own viewpoint. If there is something wrong, please correct me.</p>
+    
+    
+
+    
+
 </div>
+<script src="/js/busuanzi.pure.mini.js"></script>
+
 
         </div><!-- end #main-->
     </div><!-- end #body -->
     <footer class="footer">
-    <div class="footer-inner" style="text-align: left">
+    <div class="footer-inner" style="text-align: center">
         <p>
             <a href="/about" title="About">About</a>&nbsp;&nbsp<em>·</em>&nbsp;&nbsp
             <!-- 自定义链接 -->
